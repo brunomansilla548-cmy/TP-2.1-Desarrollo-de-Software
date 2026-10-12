@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor App
+    participant C as Correo
+    participant S as Sucursal
+    participant E as Envio
+    participant ES as estado: EnSucursal
+    participant P as Paquete
+    participant M as Movimiento
+
+    App->>C: despachar(codigo, sucursal)
+    C->>C: buscarEnvio(codigo)
+    alt envío inexistente
+        C-->>App: NoSuchElementException
+    end
+    C->>S: despachar(envio)
+    S->>E: despachar(sucursal)
+    E->>ES: despachar(envio, sucursal)
+    ES->>ES: exigirEsActual(sucursal)
+    alt sucursal distinta de la actual
+        ES-->>App: IllegalArgumentException
+    end
+    ES->>E: registrar(DESPACHADO, sucursal)
+    loop cada paquete
+        E->>P: despachar()
+    end
+    E->>M: new Movimiento(DESPACHADO, sucursal)
+    ES->>E: cambiarEstado(EnTransito)

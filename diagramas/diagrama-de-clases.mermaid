@@ -1,0 +1,97 @@
+classDiagram
+    direction LR
+    class App
+    class Correo {
+        -Map~String,Envio~ envios
+        +registrarEnvio(Envio, Sucursal)
+        +recibir(String, Sucursal)
+        +despachar(String, Sucursal)
+        +entregar(String, Sucursal)
+        +historial(String) List~Movimiento~
+        +sucursalesVisitadas(String) List~Sucursal~
+        +ultimoMovimiento(String) Movimiento
+        -buscarEnvio(String) Envio
+    }
+    class Sucursal {
+        -String nombre
+        +recibir(Envio)
+        +despachar(Envio)
+        +entregar(Envio)
+    }
+    class Envio {
+        -String codigo
+        -int capacidad
+        +agregarPaquete(Paquete)
+        +recibir(Sucursal)
+        +despachar(Sucursal)
+        +entregar(Sucursal)
+        +obtenerHistorial() List~Movimiento~
+        +obtenerSucursalesVisitadas() List~Sucursal~
+        +obtenerUltimoMovimiento() Movimiento
+        +registrar(TipoMovimiento, Sucursal)
+        +cambiarEstado(EstadoEnvio)
+        -hayLugar() boolean
+        -todaviaNoSalio() boolean
+        -tienePaquetes() boolean
+    }
+    class Paquete {
+        -String id
+        -String descripcion
+        ~recibir()
+        ~despachar()
+        ~entregar()
+        -estaFinalizado() boolean
+        -estaEnTransito() boolean
+    }
+    class EstadoPaquete {
+        <<enumeration>>
+        EN_SUCURSAL
+        EN_TRANSITO
+        ENTREGADO
+    }
+    class Movimiento {
+        -LocalDateTime fechaHora
+        +getTipo() TipoMovimiento
+        +getSucursal() Sucursal
+    }
+    class TipoMovimiento {
+        <<enumeration>>
+        RECIBIDO
+        DESPACHADO
+        ENTREGADO
+        ~aplicarA(Paquete)
+    }
+    class EstadoEnvio {
+        <<interface>>
+        +recibir(Envio, Sucursal)
+        +despachar(Envio, Sucursal)
+        +entregar(Envio, Sucursal)
+        +nombre() String
+    }
+    class Creado
+    class EnSucursal {
+        -Sucursal actual
+    }
+    class EnTransito {
+        -Sucursal despachadoDesde
+    }
+    class Entregado
+
+    App --> Correo
+    Correo "1" o-- "*" Envio
+    Correo ..> Sucursal
+    Sucursal ..> Envio : delega
+    Envio "1" *-- "1..*" Paquete
+    Envio "1" *-- "*" Movimiento
+    Envio --> "1" EstadoEnvio : estado
+    Envio --> "1" Sucursal : destino
+    Movimiento --> TipoMovimiento
+    Movimiento --> Sucursal
+    TipoMovimiento ..> Paquete : aplicarA
+    Paquete --> EstadoPaquete
+    EstadoEnvio <|.. Creado
+    EstadoEnvio <|.. EnSucursal
+    EstadoEnvio <|.. EnTransito
+    EstadoEnvio <|.. Entregado
+    EnSucursal --> Sucursal
+    EnTransito --> Sucursal
